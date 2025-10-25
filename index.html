@@ -42,16 +42,25 @@
   .chip{background:rgba(122,63,178,0.06);padding:6px 8px;border-radius:999px;font-size:12px;border:1px solid rgba(122,63,178,0.04)}
   .empty-state{background:#fff5ff;border:1px solid rgba(122,63,178,0.06);padding:14px;border-radius:10px;color:var(--muted)}
   .footer-note{font-size:13px;color:var(--muted);margin-top:10px}
+function buscarVehiculo() {
+  const filtro = searchInput.value.toLowerCase();
+  const filtrados = vehiculos.filter(v => 
+    v.rut.toLowerCase().includes(filtro)
+  );
+  mostrarVehiculos(filtrados);
+}
 </style>
 </head>
 <body>
+<input id="searchInput" placeholder="Buscar por RUT">
+<button onclick="buscarVehiculo()">Buscar</button>
 <div class="container">
   <header>
     <div>
       <div class="title">SISTEMA VEHICULAR</div>
       <div class="subtitle">Acceso moderador protegido. Entrar como civil para ver registros.</div>
     </div>
-    <div class="subtitle">Tema: blanco / morado</div>
+    <div class="subtitle">Registro vehicular</div>
   </header>
 
   <main class="layout">
@@ -121,7 +130,7 @@
 
     <div id="loginMsg" style="margin-top:10px;color:#b00020"></div>
     <div style="height:8px"></div>
-    <div class="muted">La contraseña no aparece en la página. Contraseña por defecto: <em>Estrella0703</em> (no visible en UI).</div>
+    <div class="muted">La contraseña no aparece en la página. Contraseña por defecto: <em>Anonima</em> (no visible en UI).</div>
   </div>
 </div>
 
