@@ -1,198 +1,409 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>SISTEMA VEHICULAR</title>
-
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #3a0066;
-        color: white;
-        text-align: center;
-        margin: 0;
-        padding: 0;
-    }
-
-    h2 {
-        color: white;
-        margin-top: 20px;
-    }
-
-    .card {
-        background: #FFFFFF;
-        color: #3a0066;
-        border-radius: 12px;
-        padding: 20px;
-        margin: 10px auto;
-        width: 85%;
-        max-width: 450px;
-        display: none;
-    }
-
-    input, select {
-        width: 90%;
-        padding: 10px;
-        border-radius: 8px;
-        border: 2px solid #3a0066;
-        margin-bottom: 10px;
-        font-size: 15px;
-    }
-
-    button {
-        background: #3a0066;
-        border: none;
-        color: white;
-        padding: 10px 20px;
-        font-size: 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        margin: 5px;
-    }
-
-    button:hover {
-        background: #4a007d;
-    }
-
-    .vehiculo-card {
-        background: white;
-        color: #3a0066;
-        border-radius: 12px;
-        padding: 15px;
-        margin: 10px;
-        text-align: left;
-    }
-
+  :root{
+    --purple-1: #4b1070;
+    --purple-2: #7a3fb2;
+    --white: #ffffff;
+    --muted: #6b6b6b;
+  }
+  *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;}
+  body{margin:0;background:var(--white);color:var(--purple-1);}
+  .container{max-width:1100px;margin:24px auto;padding:20px;}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .title{font-size:26px;font-weight:800;color:var(--purple-1);display:inline-flex;align-items:center;gap:10px}
+  .subtitle{color:var(--muted);font-size:13px}
+  /* modal (login) */
+  .overlay{position:fixed;inset:0;background:rgba(75,16,112,0.12);display:flex;align-items:center;justify-content:center;z-index:9999}
+  .modal{width:96%;max-width:520px;background:var(--white);border:3px solid var(--purple-2);padding:18px;border-radius:12px;box-shadow:0 12px 40px rgba(75,16,112,0.08)}
+  .modal h2{margin:0 0 8px;color:var(--purple-1)}
+  .modal p{margin:0 0 12px;color:var(--muted)}
+  .input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(122,63,178,0.12);margin-bottom:10px;font-size:15px;color:var(--purple-1)}
+  .row{display:flex;gap:8px;justify-content:flex-start;flex-wrap:wrap}
+  .btn{background:var(--purple-2);color:var(--white);border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700}
+  .btn.ghost{background:transparent;border:2px solid var(--purple-2);color:var(--purple-1)}
+  .btn.small{padding:8px 10px;font-size:14px}
+  /* panels */
+  .layout{display:grid;grid-template-columns:1fr 360px;gap:20px}
+  @media (max-width:880px){.layout{grid-template-columns:1fr}}
+  .panel-white{background:linear-gradient(180deg,#fff,#fafafa);border:1px solid rgba(122,63,178,0.06);padding:16px;border-radius:12px}
+  .panel-title{font-weight:700;color:var(--purple-1);margin-bottom:8px}
+  label{display:block;font-size:13px;color:var(--purple-1);margin-top:10px;margin-bottom:6px}
+  input[type="text"], input[type="number"]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(122,63,178,0.08);font-size:14px;color:var(--purple-1)}
+  .muted{color:var(--muted);font-size:13px}
+  /* vehicle cards */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  .veh-card{background:linear-gradient(180deg,rgba(122,63,178,0.06),rgba(75,16,112,0.02));padding:12px;border-radius:10px;border:1px solid rgba(122,63,178,0.06);color:var(--purple-1);min-height:110px}
+  .veh-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .chip{background:rgba(122,63,178,0.06);padding:6px 8px;border-radius:999px;font-size:12px;border:1px solid rgba(122,63,178,0.04)}
+  .empty-state{background:#fff5ff;border:1px solid rgba(122,63,178,0.06);padding:14px;border-radius:10px;color:var(--muted)}
+  .footer-note{font-size:13px;color:var(--muted);margin-top:10px}
 </style>
 </head>
 <body>
+<div class="container">
+  <header>
+    <div>
+      <div class="title">SISTEMA VEHICULAR</div>
+      <div class="subtitle">Acceso moderador protegido. Entrar como civil para ver registros.</div>
+    </div>
+    <div class="subtitle">Tema: blanco / morado</div>
+  </header>
 
-<h2>SISTEMA VEHICULAR</h2>
+  <main class="layout">
+    <!-- Main (cards) -->
+    <section>
+      <div id="noticeCivil" class="panel-white" style="margin-bottom:12px;display:none">
+        <div class="muted">Modo Civil: solo ver vehículos. Para agregar o eliminar, inicia sesión como Moderador.</div>
+      </div>
 
-<!-- Inicio -->
-<div id="inicio" class="card" style="display:block;">
-    <p>Ingresa la contraseña de moderador:</p>
-    <input type="password" id="pass" placeholder="Contraseña"/>
-    <button onclick="loginModerador()">Entrar como Moderador</button>
-    <br><hr>
-    <button onclick="entrarCivil()">Entrar como Civil</button>
+      <div id="cardsWrap">
+        <!-- espacio donde aparecen cartas -->
+        <div id="emptyState" class="empty-state" style="display:none">No hay vehículos registrados.</div>
+        <div id="cards" class="cards"></div>
+      </div>
+    </section>
+
+    <!-- Sidebar (moderator form) -->
+    <aside>
+      <div id="moderatorPanel" class="panel-white" style="display:none">
+        <div class="panel-title">Panel Moderador</div>
+        <div class="muted">Formulario para agregar vehículo. Solo visible para moderadores.</div>
+
+        <label for="rut">RUT</label>
+        <input id="rut" type="text" placeholder="12.345.678-9" />
+
+        <label for="propietario">Propietario</label>
+        <input id="propietario" type="text" placeholder="Nombre completo" />
+
+        <label for="marca">Marca</label>
+        <input id="marca" type="text" placeholder="Toyota, Chevrolet..." />
+
+        <label for="modelo">Modelo</label>
+        <input id="modelo" type="text" placeholder="Corolla, Silverado..." />
+
+        <label for="patente">Patente</label>
+        <input id="patente" type="text" placeholder="ABC123" />
+
+        <label for="color">Color</label>
+        <input id="color" type="text" placeholder="Rojo, Blanco..." />
+
+        <label for="anio">Año</label>
+        <input id="anio" type="number" placeholder="2020" min="1900" max="2099" />
+
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button id="btnGuardar" class="btn small">Guardar vehículo</button>
+          <button id="btnLimpiar" class="btn ghost small">Limpiar</button>
+        </div>
+
+        <div id="modInfo" class="footer-note"></div>
+      </div>
+    </aside>
+  </main>
 </div>
 
-<!-- Panel Moderador -->
-<div id="moderador" class="card">
-    <h3>Registrar Vehículo</h3>
-    <input id="rut" placeholder="RUT"/>
-    <input id="prop" placeholder="Propietario"/>
-    <input id="marca" placeholder="Marca"/>
-    <input id="modelo" placeholder="Modelo"/>
-    <input id="patente" placeholder="Patente"/>
-    <input id="color" placeholder="Color"/>
-    <input id="ano" type="number" placeholder="Año"/>
+<!-- Modal de inicio -->
+<div id="overlay" class="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2>Iniciar sesión</h2>
+    <p>Introduce la contraseña para acceder al modo Moderador. O ingresa como Civil para solo ver registros.</p>
 
-    <button onclick="guardarVehiculo()">Guardar Vehículo</button>
-    <button onclick="verVehiculos()">Ver Registrados</button>
-    <button onclick="cerrarSesion()">Salir</button>
-</div>
+    <input id="pwInput" class="input" type="password" placeholder="Contraseña" autocomplete="off" />
 
-<!-- Vista Civil -->
-<div id="civil" class="card">
-    <h3>Vehículos Registrados</h3>
-    <div id="listaVehiculos"></div>
-    <button onclick="cerrarSesion()">Volver</button>
+    <div class="row">
+      <button id="btnEntrarMod" class="btn">Entrar (Moderador)</button>
+      <button id="btnEntrarCivil" class="btn">Entrar como Civil</button>
+    </div>
+
+    <div id="loginMsg" style="margin-top:10px;color:#b00020"></div>
+    <div style="height:8px"></div>
+    <div class="muted">La contraseña no aparece en la página. Contraseña por defecto: <em>Estrella0703</em> (no visible en UI).</div>
+  </div>
 </div>
 
 <script>
-// CONFIGURAR ESTOS DATOS
-const BIN_ID = "68fc356a43b1c97be97ecaf7 ";
+/*
+  -----------------------------
+  CONFIGURA ESTOS VALORES (OPCION B)
+  -----------------------------
+  Reemplaza con tu BIN ID y tu X-Master-Key de JSONBin (no compartas la clave públicamente).
+*/
+const BIN_ID = "68fc356a43b1c97be97ecaf7";        // ej: 
 const API_KEY = "$2a$10$4ESFRaH74lb6n73Ch1fvaeH2UppEdwKcIP20sub9irW9AgyrMelRW";
 
-const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-function loginModerador() {
-    const pass = document.getElementById("pass").value;
-    if(pass === "Estrella0703") {
-        document.getElementById("inicio").style.display = "none";
-        document.getElementById("moderador").style.display = "block";
-        verVehiculos();
-    } else {
-        alert("Contraseña incorrecta");
-    }
+/* Contraseña (no se muestra en UI) */
+const MOD_PASSWORD = "Estrella0703";
+
+/* Estado local */
+let vehiculos = [];      // array con los vehículos cargados
+let isModerator = false;
+
+/* DOM */
+const overlay = document.getElementById("overlay");
+const pwInput = document.getElementById("pwInput");
+const btnEntrarMod = document.getElementById("btnEntrarMod");
+const btnEntrarCivil = document.getElementById("btnEntrarCivil");
+const loginMsg = document.getElementById("loginMsg");
+
+const cardsEl = document.getElementById("cards");
+const emptyStateEl = document.getElementById("emptyState");
+const noticeCivil = document.getElementById("noticeCivil");
+
+const moderatorPanel = document.getElementById("moderatorPanel");
+const modInfo = document.getElementById("modInfo");
+
+const rutI = document.getElementById("rut");
+const propI = document.getElementById("propietario");
+const marcaI = document.getElementById("marca");
+const modeloI = document.getElementById("modelo");
+const patenteI = document.getElementById("patente");
+const colorI = document.getElementById("color");
+const anioI = document.getElementById("anio");
+const btnGuardar = document.getElementById("btnGuardar");
+const btnLimpiar = document.getElementById("btnLimpiar");
+
+/* ------------------ Helpers ------------------ */
+
+function showOverlay(){ overlay.style.display = "flex"; pwInput.value=""; loginMsg.innerText=""; pwInput.focus(); }
+function hideOverlay(){ overlay.style.display = "none"; }
+function showModeratorPanel(){ moderatorPanel.style.display = "block"; }
+function hideModeratorPanel(){ moderatorPanel.style.display = "none"; }
+function showCivilNotice(){ noticeCivil.style.display = "block"; }
+function hideCivilNotice(){ noticeCivil.style.display = "none"; }
+
+function escapeHtml(str){
+  if(str === undefined || str === null) return "";
+  return String(str).replace(/[&<>"'`=\/]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#96;','=':'&#x3D;'}[s]));
 }
 
-function entrarCivil() {
-    document.getElementById("inicio").style.display = "none";
-    document.getElementById("civil").style.display = "block";
-    verVehiculos();
-}
+/* ------------------ Render ------------------ */
 
-function cerrarSesion() {
-    document.getElementById("moderador").style.display = "none";
-    document.getElementById("civil").style.display = "none";
-    document.getElementById("inicio").style.display = "block";
-}
+function renderList(){
+  cardsEl.innerHTML = "";
+  if(!vehiculos || vehiculos.length === 0){
+    emptyStateEl.style.display = "block";
+    return;
+  } else {
+    emptyStateEl.style.display = "none";
+  }
 
-async function obtenerVehiculos() {
-    const res = await fetch(`${API_URL}/latest`, {
-        headers: {
-            "X-Master-Key": API_KEY
-        }
+  vehiculos.forEach((v, idx) => {
+    const div = document.createElement("div");
+    div.className = "veh-card";
+    div.innerHTML = `
+      <div class="veh-top">
+        <div style="font-weight:700">${escapeHtml(v.propietario || "—")}</div>
+        <div class="chip">${escapeHtml(v.patente || "—")}</div>
+      </div>
+      <div style="margin-bottom:6px;color:var(--muted)">${escapeHtml(v.marca || "—")} • ${escapeHtml(v.modelo || "—")} • ${escapeHtml(v.anio || "—")}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="chip">RUT: ${escapeHtml(v.rut || "—")}</div>
+        <div class="chip">Color: ${escapeHtml(v.color || "—")}</div>
+      </div>
+      ${isModerator ? `<div style="margin-top:8px;text-align:right"><button data-idx="${idx}" class="btn small deleteBtn" style="background:#ffe6ea;color:#b00020;border-radius:8px;padding:6px 8px;border:1px solid rgba(176,0,32,0.08);font-weight:700">Eliminar</button></div>` : ""}
+    `;
+    cardsEl.appendChild(div);
+  });
+
+  // attach delete handlers if moderator
+  if(isModerator){
+    document.querySelectorAll(".deleteBtn").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        const i = Number(e.currentTarget.dataset.idx);
+        const ok = confirm("¿Eliminar este vehículo?");
+        if(!ok) return;
+        await eliminarVehiculo(i);
+      });
     });
+  }
+}
+
+/* ------------------ JSONBin API ------------------ */
+
+/*
+  Nota para JSONBin Gratis: crea el bin con contenido inicial:
+  {
+    "vehiculos": []
+  }
+*/
+async function obtenerDesdeJsonBin(){
+  if(!BIN_ID || !API_KEY || BIN_ID.includes("AQUI") || API_KEY.includes("AQUI")){
+    modInfo.innerText = "BIN_ID o API_KEY no configurados en el código.";
+    return [];
+  }
+
+  try{
+    modInfo.innerText = "Cargando desde JSONBin...";
+    const res = await fetch(`${BASE_URL}/latest`, {
+      method: "GET",
+      headers: {
+        "X-Master-Key": API_KEY,
+        "Content-Type": "application/json"
+      }
+    });
+    if(!res.ok) throw new Error("Error al leer JSONBin: " + res.status);
     const data = await res.json();
-    return data.record.vehiculos || [];
+    const record = data.record || {};
+    const arr = Array.isArray(record.vehiculos) ? record.vehiculos : [];
+    modInfo.innerText = `Cargados ${arr.length} vehículos.`;
+    return arr;
+  } catch(err){
+    console.error(err);
+    modInfo.innerText = "Error cargando datos (ver consola).";
+    return [];
+  }
 }
 
-async function guardarVehiculo() {
-    const vehiculos = await obtenerVehiculos();
+async function guardarEnJsonBin(arr){
+  if(!BIN_ID || !API_KEY || BIN_ID.includes("AQUI") || API_KEY.includes("AQUI")){
+    alert("BIN_ID o API_KEY no configurados. Abre el archivo y pega tus datos.");
+    return false;
+  }
 
-    const nuevo = {
-        rut: rut.value,
-        propietario: prop.value,
-        marca: marca.value,
-        modelo: modelo.value,
-        patente: patente.value,
-        color: color.value,
-        ano: ano.value
-    };
-
-    vehiculos.push(nuevo);
-
-    await fetch(API_URL, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "X-Master-Key": API_KEY
-        },
-        body: JSON.stringify({ vehiculos })
+  try{
+    modInfo.innerText = "Guardando en JSONBin...";
+    const payload = { vehiculos: arr };
+    const res = await fetch(BASE_URL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": API_KEY
+      },
+      body: JSON.stringify(payload)
     });
-
-    alert("Vehículo guardado con éxito");
-    verVehiculos();
+    if(!res.ok) throw new Error("Error al guardar: " + res.status);
+    modInfo.innerText = "Guardado correctamente.";
+    return true;
+  } catch(err){
+    console.error(err);
+    modInfo.innerText = "Error guardando (ver consola).";
+    return false;
+  }
 }
 
-async function verVehiculos() {
-    const lista = document.getElementById("listaVehiculos");
-    lista.innerHTML = "Cargando...";
+/* ------------------ CRUD local + sync ------------------ */
 
-    const vehiculos = await obtenerVehiculos();
-    lista.innerHTML = "";
-
-    vehiculos.forEach(v => {
-        const card = document.createElement("div");
-        card.className = "vehiculo-card";
-        card.innerHTML = `
-            <strong>RUT:</strong> ${v.rut}<br>
-            <strong>Propietario:</strong> ${v.propietario}<br>
-            <strong>Marca:</strong> ${v.marca}<br>
-            <strong>Modelo:</strong> ${v.modelo}<br>
-            <strong>Patente:</strong> ${v.patente}<br>
-            <strong>Color:</strong> ${v.color}<br>
-            <strong>Año:</strong> ${v.ano}
-        `;
-        lista.appendChild(card);
-    });
+async function cargarVehiculos(){
+  vehiculos = await obtenerDesdeJsonBin();
+  renderList();
 }
+
+async function guardarVehiculo(){
+  // validaciones básicas
+  const rut = rutI.value.trim();
+  const propietario = propI.value.trim();
+  const marca = marcaI.value.trim();
+  const modelo = modeloI.value.trim();
+  const patente = patenteI.value.trim();
+
+  if(!rut || !propietario || !marca || !modelo || !patente){
+    alert("Completa los campos obligatorios: RUT, Propietario, Marca, Modelo, Patente.");
+    return;
+  }
+
+  const nuevo = {
+    rut,
+    propietario,
+    marca,
+    modelo,
+    patente,
+    color: colorI.value.trim(),
+    anio: anioI.value ? anioI.value.toString() : ""
+  };
+
+  // push al inicio (últimos arriba)
+  vehiculos.unshift(nuevo);
+
+  const ok = await guardarEnJsonBin(vehiculos);
+  if(ok){
+    clearForm();
+    renderList();
+    alert("Vehículo guardado correctamente.");
+  } else {
+    alert("Error al guardar en JSONBin. Revisa consola y credenciales.");
+  }
+}
+
+async function eliminarVehiculo(index){
+  if(index < 0 || index >= vehiculos.length) return;
+  vehiculos.splice(index, 1);
+  const ok = await guardarEnJsonBin(vehiculos);
+  if(ok){
+    renderList();
+    alert("Eliminado correctamente.");
+  } else {
+    alert("Error al eliminar en JSONBin.");
+  }
+}
+
+function clearForm(){
+  rutI.value = "";
+  propI.value = "";
+  marcaI.value = "";
+  modeloI.value = "";
+  patenteI.value = "";
+  colorI.value = "";
+  anioI.value = "";
+}
+
+/* ------------------ UI / eventos ------------------ */
+
+btnEntrarMod.addEventListener("click", async () => {
+  const pass = pwInput.value || "";
+  if(pass === MOD_PASSWORD){
+    isModerator = true;
+    hideOverlay();
+    showModeratorPanel();
+    hideCivilNotice();
+    await cargarVehiculos();
+    renderList();
+  } else {
+    loginMsg.innerText = "Contraseña incorrecta.";
+  }
+});
+
+btnEntrarCivil.addEventListener("click", async () => {
+  isModerator = false;
+  hideOverlay();
+  hideModeratorPanel();
+  showCivilNotice();
+  await cargarVehiculos();
+  renderList();
+});
+
+pwInput.addEventListener("keyup", (e) => {
+  if(e.key === "Enter") btnEntrarMod.click();
+});
+
+btnGuardar.addEventListener("click", guardarVehiculo);
+btnLimpiar.addEventListener("click", clearForm);
+
+/* abrir modal al cargar */
+window.addEventListener("load", async () => {
+  showOverlay();
+  // intentamos cargar pero no mostramos panel a menos que seas moderador
+  if(!BIN_ID || !API_KEY || BIN_ID.includes("AQUI") || API_KEY.includes("AQUI")){
+    modInfo.innerText = "Recuerda pegar BIN_ID y API_KEY en el archivo para que guarde.";
+    // no abortamos: la UI se puede usar pero sin guardar
+    vehiculos = [];
+    renderList();
+    return;
+  }
+  // si hay credenciales intentamos cargar para mostrar a civiles
+  await cargarVehiculos();
+  renderList();
+});
+
+/* util: mostrar/ocultar overlay */
+function showOverlay(){ overlay.style.display = "flex"; }
+function hideOverlay(){ overlay.style.display = "none"; }
+
 </script>
-
 </body>
 </html>
