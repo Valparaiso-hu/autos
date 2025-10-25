@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SISTEMA VEHICULAR</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #3a0066;
+        color: white;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+
+    h2 {
+        color: white;
+        margin-top: 20px;
+    }
+
+    .card {
+        background: #FFFFFF;
+        color: #3a0066;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 10px auto;
+        width: 85%;
+        max-width: 450px;
+        display: none;
+    }
+
+    input, select {
+        width: 90%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 2px solid #3a0066;
+        margin-bottom: 10px;
+        font-size: 15px;
+    }
+
+    button {
+        background: #3a0066;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 5px;
+    }
+
+    button:hover {
+        background: #4a007d;
+    }
+
+    .vehiculo-card {
+        background: white;
+        color: #3a0066;
+        border-radius: 12px;
+        padding: 15px;
+        margin: 10px;
+        text-align: left;
+    }
+
+</style>
+</head>
+<body>
+
+<h2>SISTEMA VEHICULAR</h2>
+
+<!-- Inicio -->
+<div id="inicio" class="card" style="display:block;">
+    <p>Ingresa la contraseña de moderador:</p>
+    <input type="password" id="pass" placeholder="Contraseña"/>
+    <button onclick="loginModerador()">Entrar como Moderador</button>
+    <br><hr>
+    <button onclick="entrarCivil()">Entrar como Civil</button>
+</div>
+
+<!-- Panel Moderador -->
+<div id="moderador" class="card">
+    <h3>Registrar Vehículo</h3>
+    <input id="rut" placeholder="RUT"/>
+    <input id="prop" placeholder="Propietario"/>
+    <input id="marca" placeholder="Marca"/>
+    <input id="modelo" placeholder="Modelo"/>
+    <input id="patente" placeholder="Patente"/>
+    <input id="color" placeholder="Color"/>
+    <input id="ano" type="number" placeholder="Año"/>
+
+    <button onclick="guardarVehiculo()">Guardar Vehículo</button>
+    <button onclick="verVehiculos()">Ver Registrados</button>
+    <button onclick="cerrarSesion()">Salir</button>
+</div>
+
+<!-- Vista Civil -->
+<div id="civil" class="card">
+    <h3>Vehículos Registrados</h3>
+    <div id="listaVehiculos"></div>
+    <button onclick="cerrarSesion()">Volver</button>
+</div>
+
+<script>
+// CONFIGURAR ESTOS DATOS
+const BIN_ID = "68fc356a43b1c97be97ecaf7 ";
+const API_KEY = "$2a$10$4ESFRaH74lb6n73Ch1fvaeH2UppEdwKcIP20sub9irW9AgyrMelRW";
+
+const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+function loginModerador() {
+    const pass = document.getElementById("pass").value;
+    if(pass === "Estrella0703") {
+        document.getElementById("inicio").style.display = "none";
+        document.getElementById("moderador").style.display = "block";
+        verVehiculos();
+    } else {
+        alert("Contraseña incorrecta");
+    }
+}
+
+function entrarCivil() {
+    document.getElementById("inicio").style.display = "none";
+    document.getElementById("civil").style.display = "block";
+    verVehiculos();
+}
+
+function cerrarSesion() {
+    document.getElementById("moderador").style.display = "none";
+    document.getElementById("civil").style.display = "none";
+    document.getElementById("inicio").style.display = "block";
+}
+
+async function obtenerVehiculos() {
+    const res = await fetch(`${API_URL}/latest`, {
+        headers: {
+            "X-Master-Key": API_KEY
+        }
+    });
+    const data = await res.json();
+    return data.record.vehiculos || [];
+}
+
+async function guardarVehiculo() {
+    const vehiculos = await obtenerVehiculos();
+
+    const nuevo = {
+        rut: rut.value,
+        propietario: prop.value,
+        marca: marca.value,
+        modelo: modelo.value,
+        patente: patente.value,
+        color: color.value,
+        ano: ano.value
+    };
+
+    vehiculos.push(nuevo);
+
+    await fetch(API_URL, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": API_KEY
+        },
+        body: JSON.stringify({ vehiculos })
+    });
+
+    alert("Vehículo guardado con éxito");
+    verVehiculos();
+}
+
+async function verVehiculos() {
+    const lista = document.getElementById("listaVehiculos");
+    lista.innerHTML = "Cargando...";
+
+    const vehiculos = await obtenerVehiculos();
+    lista.innerHTML = "";
+
+    vehiculos.forEach(v => {
+        const card = document.createElement("div");
+        card.className = "vehiculo-card";
+        card.innerHTML = `
+            <strong>RUT:</strong> ${v.rut}<br>
+            <strong>Propietario:</strong> ${v.propietario}<br>
+            <strong>Marca:</strong> ${v.marca}<br>
+            <strong>Modelo:</strong> ${v.modelo}<br>
+            <strong>Patente:</strong> ${v.patente}<br>
+            <strong>Color:</strong> ${v.color}<br>
+            <strong>Año:</strong> ${v.ano}
+        `;
+        lista.appendChild(card);
+    });
+}
+</script>
+
+</body>
+</html>
