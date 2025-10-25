@@ -42,18 +42,24 @@
   .chip{background:rgba(122,63,178,0.06);padding:6px 8px;border-radius:999px;font-size:12px;border:1px solid rgba(122,63,178,0.04)}
   .empty-state{background:#fff5ff;border:1px solid rgba(122,63,178,0.06);padding:14px;border-radius:10px;color:var(--muted)}
   .footer-note{font-size:13px;color:var(--muted);margin-top:10px}
-function buscarVehiculo() {
-  const filtro = searchInput.value.toLowerCase();
-  const filtrados = vehiculos.filter(v => 
-    v.rut.toLowerCase().includes(filtro)
-  );
+const btnBuscar = document.getElementById("btnBuscar");
+const searchInput = document.getElementById("searchInput");
+
+btnBuscar.addEventListener("click", () => {
+  const filtro = searchInput.value.toLowerCase().trim();
+  if (!filtro) {
+    mostrarVehiculos(vehiculos); // si el input está vacío, mostrar todos
+    return;
+  }
+
+  const filtrados = vehiculos.filter(v => v.rut.toLowerCase().includes(filtro));
   mostrarVehiculos(filtrados);
-}
+});
 </style>
 </head>
 <body>
 <input id="searchInput" placeholder="Buscar por RUT">
-<button onclick="buscarVehiculo()">Buscar</button>
+<button id="btnBuscar">Buscar</button>
 <div class="container">
   <header>
     <div>
