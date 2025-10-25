@@ -1,506 +1,281 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SISTEMA VEHICULAR — Civil / Policía / Moderador</title>
+<title>MDT | Concesionario</title>
 <style>
-  :root{
-    --purple-1:#4b1070;
-    --purple-2:#7a3fb2;
-    --white:#ffffff;
-    --muted:#6b6b6b;
-    --danger:#b00020;
-  }
-  *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;}
-  body{margin:0;background:var(--white);color:var(--purple-1);min-height:100vh;}
-  .wrap{max-width:1100px;margin:24px auto;padding:18px;}
-  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
-  .title{font-size:24px;font-weight:800;color:var(--purple-1)}
-  .subtitle{color:var(--muted);font-size:13px}
-  /* layout */
-  .layout{display:grid;grid-template-columns:1fr 360px;gap:20px}
-  @media (max-width:880px){.layout{grid-template-columns:1fr}}
-  /* Panels */
-  .panel{background:linear-gradient(180deg,#fff,#fafafa);border:1px solid rgba(122,63,178,0.06);padding:16px;border-radius:12px}
-  .panel h3{margin:0 0 8px 0;color:var(--purple-1)}
-  label{display:block;margin-top:12px;margin-bottom:6px;color:var(--purple-1)}
-  input[type="text"], input[type="number"], select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(122,63,178,0.08);font-size:14px;color:var(--purple-1)}
-  .muted{color:var(--muted);font-size:13px}
-  .btn{background:var(--purple-2);color:var(--white);border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700}
-  .btn.ghost{background:transparent;border:2px solid var(--purple-2);color:var(--purple-1)}
-  .btn.small{padding:8px 10px;font-size:14px}
-  .btn.delete{background:#ffe6ea;color:var(--danger);border:1px solid rgba(176,0,32,0.08)}
-  /* cards */
-  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-  .veh-card{background:linear-gradient(180deg,rgba(122,63,178,0.06),rgba(75,16,112,0.02));padding:12px;border-radius:10px;border:1px solid rgba(122,63,178,0.06);color:var(--purple-1);min-height:120px;position:relative}
-  .veh-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-  .chip{background:rgba(122,63,178,0.06);padding:6px 8px;border-radius:999px;font-size:12px;border:1px solid rgba(122,63,178,0.04)}
-  .empty{background:#fff5ff;border:1px solid rgba(122,63,178,0.06);padding:14px;border-radius:10px;color:var(--muted)}
-  .footer-note{font-size:13px;color:var(--muted);margin-top:10px}
-  /* overlay/modal */
-  .overlay{position:fixed;inset:0;background:rgba(75,16,112,0.12);display:flex;align-items:center;justify-content:center;z-index:999}
-  .modal{width:96%;max-width:520px;background:var(--white);border:3px solid var(--purple-2);padding:18px;border-radius:12px;box-shadow:0 12px 40px rgba(75,16,112,0.08)}
-  .modal h2{margin:0 0 8px;color:var(--purple-1)}
-  .row{display:flex;gap:8px;flex-wrap:wrap}
-  .search-row{display:flex;gap:8px;align-items:center;margin-bottom:12px}
-  input.search{padding:8px;border-radius:8px;border:1px solid rgba(122,63,178,0.08);width:240px}
-  small.note{display:block;color:var(--muted);margin-top:8px}
-  .status-badge{padding:6px 8px;border-radius:8px;font-weight:700}
-  .status-neutro{background:#eef2ff;color:var(--purple-1)}
-  .status-incautado{background:#fff4e6;color:#b85a00}
-  .status-confiscado{background:#ffe6ea;color:var(--danger)}
+:root{
+  --purple-1:#4b1070;
+  --purple-2:#7a3fb2;
+  --white:#ffffff;
+  --muted:#ccc;
+}
+*{box-sizing:border-box;font-family:Inter, Arial, sans-serif;margin:0;padding:0;}
+body{background:linear-gradient(180deg,#4b1070,#7a3fb2);color:var(--white);padding:20px;}
+.wrap{max-width:1100px;margin:0 auto;}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+header h1{font-size:24px;color:var(--white);}
+header .note{font-size:14px;color:var(--muted);}
+button{padding:8px 12px;border-radius:6px;border:none;background:var(--white);color:var(--purple-1);cursor:pointer;font-weight:700;}
+button.ghost{background:transparent;border:2px solid var(--white);color:var(--white);}
+.field-small{padding:6px;border-radius:6px;border:1px solid var(--white);background:transparent;color:var(--white);}
+.main{background:rgba(255,255,255,0.05);padding:16px;border-radius:10px;margin-top:12px;}
+.table-wrap{overflow-x:auto;margin-top:12px;}
+table{width:100%;border-collapse:collapse;}
+th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.1);text-align:left;}
+th{background:rgba(255,255,255,0.1);color:var(--white);}
+.estado-text{cursor:pointer;text-decoration:underline dotted;}
+select.estado-select{padding:4px;border-radius:4px;}
+.login-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:999;}
+.login-box{background:#2b0b3a;padding:20px;border-radius:12px;width:100%;max-width:400px;}
+.login-box label{display:block;margin-top:8px;color:var(--white);}
+.login-box input{width:100%;padding:8px;border-radius:6px;border:1px solid var(--white);margin-top:6px;background:transparent;color:var(--white);}
+.hide{display:none;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div>
-      <div class="title">SISTEMA VEHICULAR</div>
-      <div class="subtitle">Modos: Civil / Policía / Moderador — Tema blanco/morado</div>
-    </div>
-    <div class="subtitle">Estática + JSONBin</div>
+    <h1>MDT | Concesionario</h1>
+    <div class="note">Acceso controlado • Morado & Blanco</div>
   </header>
 
-  <!-- search + info -->
-  <div style="margin-bottom:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-    <div class="search-row">
-      <input id="searchInput" class="search" placeholder="Buscar por propietario (nombre)">
-      <button id="btnBuscar" class="btn small">Buscar</button>
-      <button id="btnClearSearch" class="btn ghost small">Limpiar búsqueda</button>
-    </div>
-
-    <div style="margin-left:auto">
-      <button id="btnOpenLogin" class="btn small">Panel de inicio de sesión</button>
+  <!-- Login overlay -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-box">
+      <h2>Panel de acceso</h2>
+      <label>Contraseña policía</label>
+      <input id="passPolicia" type="password" placeholder="Contraseña Policía">
+      <label>Contraseña moderador</label>
+      <input id="passModerador" type="password" placeholder="Contraseña Moderador">
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <button id="btnCivil">Entrar como Civil</button>
+        <button id="btnLogin">Ingresar</button>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:#ddd;">Civil: solo ver. Policía: cambiar estado. Moderador: registrar autos.</div>
     </div>
   </div>
 
-  <main class="layout">
-    <!-- main: cards -->
-    <section>
-      <div id="notice" class="panel" style="margin-bottom:12px;display:none">
-        <div class="muted">Modo visible: cambia según tu acceso.</div>
+  <main class="main" aria-hidden="true">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+      <div><button id="btnAgregar" class="ghost hide">Agregar Auto</button></div>
+      <div>
+        <input id="inputBuscar" class="field-small" placeholder="Buscar por RUT, Nombre o Patente">
+        <button id="btnBuscar">Buscar</button>
+        <button id="btnRefrescar" class="ghost">Refrescar</button>
       </div>
+      <div style="margin-left:auto">Modo: <strong id="modoLabel">No autenticado</strong></div>
+    </div>
 
-      <div id="emptyState" class="empty" style="display:none">No hay vehículos registrados.</div>
-      <div id="cards" class="cards" style="margin-top:12px"></div>
-    </section>
-
-    <!-- sidebar: moderator form -->
-    <aside>
-      <div id="moderatorPanel" class="panel" style="display:none">
-        <h3>Panel Moderador</h3>
-        <div class="muted">Registrar vehículo (solo Moderador).</div>
-
-        <label>Contraseña de formulario (Moderador)</label>
-        <input id="moderPass" type="password" placeholder="Contraseña del formulario (ModeracionCHCRP)">
-
-        <label for="rut">RUT</label>
-        <input id="rut" type="text" placeholder="12.345.678-9">
-
-        <label for="propietario">Propietario</label>
-        <input id="propietario" type="text" placeholder="Nombre completo">
-
-        <label for="marca">Marca</label>
-        <input id="marca" type="text" placeholder="Toyota">
-
-        <label for="modelo">Modelo</label>
-        <input id="modelo" type="text" placeholder="Corolla">
-
-        <label for="patente">Patente</label>
-        <input id="patente" type="text" placeholder="ABC123">
-
-        <label for="color">Color</label>
-        <input id="color" type="text" placeholder="Blanco">
-
-        <label for="anio">Año</label>
-        <input id="anio" type="number" placeholder="2020" min="1900" max="2099">
-
-        <div style="margin-top:12px;display:flex;gap:8px;">
-          <button id="btnGuardar" class="btn small">Guardar vehículo</button>
-          <button id="btnLimpiar" class="btn ghost small">Limpiar</button>
-        </div>
-
-        <div id="modInfo" class="footer-note"></div>
+    <!-- Form agregar auto -->
+    <div id="formAdd" class="hide">
+      <h3>Agregar Auto</h3>
+      <input id="rut" placeholder="RUT">
+      <input id="prop" placeholder="Propietario">
+      <input id="marca" placeholder="Marca">
+      <input id="modelo" placeholder="Modelo">
+      <input id="patente" placeholder="Patente">
+      <input id="color" placeholder="Color">
+      <input id="anio" type="number" placeholder="Año">
+      <div style="margin-top:8px;display:flex;gap:6px;">
+        <button id="guardarBtn">Guardar</button>
+        <button id="cancelBtn" class="ghost">Cancelar</button>
       </div>
-    </aside>
+    </div>
+
+    <!-- Tabla autos -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>RUT</th>
+            <th>Propietario</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Patente</th>
+            <th>Color</th>
+            <th>Año</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
   </main>
 </div>
 
-<!-- Login modal -->
-<div id="overlay" class="overlay" style="display:none">
-  <div class="modal" role="dialog">
-    <h2>Panel de inicio de sesión</h2>
-    <p>Elige modo y luego ingresa la contraseña correspondiente.</p>
-
-    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-      <button id="modeCivil" class="btn small">Ciudadano</button>
-      <button id="modePolicia" class="btn small">Policía</button>
-      <button id="modeModerador" class="btn small">Moderador</button>
-    </div>
-
-    <div id="loginForm" style="margin-top:8px;display:none">
-      <label>Ingresa la contraseña</label>
-      <input id="pwInput" class="input" type="password" placeholder="Contraseña">
-      <div class="row" style="margin-top:8px">
-        <button id="btnLogin" class="btn small">Iniciar sesión</button>
-        <button id="btnLoginCancel" class="btn ghost small">Cancelar</button>
-      </div>
-      <small class="note">Contraseñas (debe saberlas): Policía → <em>CarabinerosDeChileCHCRP</em>, Moderador → <em>ModeracionCHCRP</em>. Para editar estado (policía) se pedirá otra contraseña.</small>
-    </div>
-
-    <div id="loginMsg" style="color:var(--danger);margin-top:8px"></div>
-  </div>
-</div>
-
-<!-- Modal editar estado -->
-<div id="overlayEdit" class="overlay" style="display:none">
-  <div class="modal" role="dialog">
-    <h2>Editar estado del vehículo</h2>
-    <p>Para cambiar el estado se requiere la contraseña de edición.</p>
-
-    <label>Contraseña de edición</label>
-    <input id="editPass" type="password" placeholder="Contraseña para editar estado (ChileCityRP0703)">
-
-    <label>Nuevo estado</label>
-    <select id="newState">
-      <option value="Neutro">Neutro</option>
-      <option value="Incautado">Incautado</option>
-      <option value="Confiscado">Confiscado</option>
-    </select>
-
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <button id="btnApplyState" class="btn small">Aplicar estado</button>
-      <button id="btnCancelState" class="btn ghost small">Cancelar</button>
-    </div>
-
-    <div id="editMsg" style="color:var(--danger);margin-top:8px"></div>
-  </div>
-</div>
-
 <script>
-/* ========== CONFIG (pega TU BIN_ID y TU API_KEY) ========== */
-const BIN_ID = "68fcffb343b1c97be9803fbc "; // ej "650d1a2f6f1c12345abc6789"
-const API_KEY = "$2a$10$P8Vcs58sRtKtBzlgtXD5E.vvn0cWi9.rQxAgn8/Q.tt3qAyj7sUkO"; // tu X-Master-Key
+const BIN_ID = "68fcffb343b1c97be9803fbc"; // tu Bin ID
+const API_KEY = "$2a$10$P8Vcs58sRtKtBzlgtXD5E.vvn0cWi9.rQxAgn8/Q.tt3qAyj7sUkO"; // X-Master-Key
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-/* Contraseñas requeridas (tal como pediste) */
-const PASSWORD_POLICIA = "CarabinerosDeChileCHCRP";
-const PASSWORD_MODERADOR = "ModeracionCHCRP";
-const PASSWORD_EDIT = "ChileCityRP0703"; // contraseña para editar estado (policía)
+const PASS_POLICIA = "CarabinerosDeChileCHCRP";
+const PASS_MODERADOR = "ModeracionCHCRP";
+const PASS_ESTADO = "ChileCityRP0703";
 
-/* Estado local */
-let vehiculos = []; // array de objetos { rut, propietario, marca, modelo, patente, color, anio, estado }
-let currentRole = "none"; // 'civil' | 'policia' | 'moderador'
-let editTargetIndex = -1;
+let autos = [];
+let modo = "civil";
 
-/* DOM refs */
-const btnOpenLogin = document.getElementById("btnOpenLogin");
-const overlay = document.getElementById("overlay");
-const overlayEdit = document.getElementById("overlayEdit");
-const modeCivil = document.getElementById("modeCivil");
-const modePolicia = document.getElementById("modePolicia");
-const modeModerador = document.getElementById("modeModerador");
-const loginForm = document.getElementById("loginForm");
-const pwInput = document.getElementById("pwInput");
+const loginOverlay = document.getElementById("loginOverlay");
+const passPolicia = document.getElementById("passPolicia");
+const passModerador = document.getElementById("passModerador");
 const btnLogin = document.getElementById("btnLogin");
-const btnLoginCancel = document.getElementById("btnLoginCancel");
-const loginMsg = document.getElementById("loginMsg");
+const btnCivil = document.getElementById("btnCivil");
+const modoLabel = document.getElementById("modoLabel");
 
-const cardsEl = document.getElementById("cards");
-const emptyStateEl = document.getElementById("emptyState");
-const notice = document.getElementById("notice");
-
-const moderatorPanel = document.getElementById("moderatorPanel");
-const modInfo = document.getElementById("modInfo");
-const moderPass = document.getElementById("moderPass");
+const btnAgregar = document.getElementById("btnAgregar");
+const formAdd = document.getElementById("formAdd");
+const guardarBtn = document.getElementById("guardarBtn");
+const cancelBtn = document.getElementById("cancelBtn");
 
 const rutI = document.getElementById("rut");
-const propI = document.getElementById("propietario");
+const propI = document.getElementById("prop");
 const marcaI = document.getElementById("marca");
 const modeloI = document.getElementById("modelo");
 const patenteI = document.getElementById("patente");
 const colorI = document.getElementById("color");
 const anioI = document.getElementById("anio");
-const btnGuardar = document.getElementById("btnGuardar");
-const btnLimpiar = document.getElementById("btnLimpiar");
 
-const searchInput = document.getElementById("searchInput");
+const inputBuscar = document.getElementById("inputBuscar");
 const btnBuscar = document.getElementById("btnBuscar");
-const btnClearSearch = document.getElementById("btnClearSearch");
+const btnRefrescar = document.getElementById("btnRefrescar");
+const tbody = document.getElementById("tbody");
 
-/* Edit modal refs */
-const overlayEditModal = document.getElementById("overlayEdit");
-const editPass = document.getElementById("editPass");
-const newState = document.getElementById("newState");
-const btnApplyState = document.getElementById("btnApplyState");
-const btnCancelState = document.getElementById("btnCancelState");
-const editMsg = document.getElementById("editMsg");
-
-/* ---------------- Util ---------------- */
-function escapeHtml(str){
-  if(str === undefined || str === null) return "";
-  return String(str).replace(/[&<>"'`=\/]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#96;','=':'&#x3D;'}[s]));
-}
-
-/* ---------------- JSONBin ---------------- */
-async function fetchFromJsonBin(){
-  if(!BIN_ID || !API_KEY || BIN_ID.includes("68fcffb343b1c97be9803fbc") || API_KEY.includes("$2a$10$P8Vcs58sRtKtBzlgtXD5E.vvn0cWi9.rQxAgn8/Q.tt3qAyj7sUkO")){
-    modInfo.innerText = "Pega BIN_ID y API_KEY en el código para habilitar guardado.";
-    return [];
-  }
+/* JSONBin */
+async function cargarAutos(){
   try{
-    modInfo.innerText = "Cargando datos desde JSONBin...";
-    const res = await fetch(`${BASE_URL}/latest`, {
-      headers: { "X-Master-Key": API_KEY, "Content-Type": "application/json" }
-    });
-    if(!res.ok) throw new Error("Error " + res.status);
-    const data = await res.json();
-    const record = data.record || {};
-    return Array.isArray(record.vehiculos) ? record.vehiculos : [];
-  } catch(err){
-    console.error(err);
-    modInfo.innerText = "Error cargando JSONBin (ver consola).";
-    return [];
-  }
+    const res = await fetch(`${BASE_URL}/latest`, { headers: {"X-Master-Key":API_KEY} });
+    const json = await res.json();
+    autos = (json.record && json.record.autos) ? json.record.autos : [];
+    renderTabla();
+  }catch(e){console.error(e);}
 }
-
-async function putToJsonBin(arr){
-  if(!BIN_ID || !API_KEY || BIN_ID.includes("68fcffb343b1c97be9803fbc") || API_KEY.includes("$2a$10$4ESFRaH74lb6n73Ch1fvaeH2UppEdwKcIP20sub9irW9AgyrMelRW")){
-    alert("Configura BIN_ID y API_KEY en el archivo.");
-    return false;
-  }
+async function guardarAutos(){
   try{
-    modInfo.innerText = "Guardando en JSONBin...";
-    const res = await fetch(BASE_URL, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", "X-Master-Key": API_KEY },
-      body: JSON.stringify({ vehiculos: arr })
-    });
-    if(!res.ok) throw new Error("Error " + res.status);
-    modInfo.innerText = "Guardado correcto.";
-    return true;
-  } catch(err){
-    console.error(err);
-    modInfo.innerText = "Error guardando (ver consola).";
-    return false;
-  }
+    await fetch(BASE_URL,{method:"PUT",headers:{"Content-Type":"application/json","X-Master-Key":API_KEY},body:JSON.stringify({autos})});
+  }catch(e){console.error(e);}
 }
 
-/* --------------- Render --------------- */
-function renderList(list = null){
-  const data = Array.isArray(list) ? list : vehiculos;
-  cardsEl.innerHTML = "";
-  if(!data || data.length === 0){
-    emptyStateEl.style.display = "block";
-    return;
-  } else emptyStateEl.style.display = "none";
+/* Login */
+btnLogin.addEventListener("click",()=>{
+  const pP = passPolicia.value.trim();
+  const pM = passModerador.value.trim();
+  if(pM===PASS_MODERADOR){
+    modo="moderador";
+  } else if(pP===PASS_POLICIA){
+    modo="policia";
+  } else {
+    alert("Contraseña incorrecta"); return;
+  }
+  loginOverlay.style.display="none";
+  modoLabel.textContent=modo.charAt(0).toUpperCase()+modo.slice(1);
+  if(modo==="moderador") btnAgregar.classList.remove("hide");
+  document.querySelector("main").setAttribute("aria-hidden","false");
+  cargarAutos();
+});
 
-  data.forEach((v, idx) => {
-    const div = document.createElement("div");
-    div.className = "veh-card";
-    // status badge
-    let statusHtml = `<span class="status-badge status-neutro">Neutro</span>`;
-    if(v.estado === "Incautado") statusHtml = `<span class="status-badge status-incautado">Incautado</span>`;
-    if(v.estado === "Confiscado") statusHtml = `<span class="status-badge status-confiscado">Confiscado</span>`;
+btnCivil.addEventListener("click",()=>{
+  modo="civil";
+  loginOverlay.style.display="none";
+  modoLabel.textContent="Civil";
+  document.querySelector("main").setAttribute("aria-hidden","false");
+  cargarAutos();
+});
 
-    div.innerHTML = `
-      <div class="veh-top">
-        <div style="font-weight:700">${escapeHtml(v.propietario || "—")}</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          ${statusHtml}
-          <div class="chip">${escapeHtml(v.patente || "—")}</div>
-        </div>
-      </div>
-      <div style="margin-bottom:6px;color:var(--muted)">${escapeHtml(v.marca || "—")} • ${escapeHtml(v.modelo || "—")} • ${escapeHtml(v.anio || "—")}</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <div class="chip">RUT: ${escapeHtml(v.rut || "—")}</div>
-        <div class="chip">Color: ${escapeHtml(v.color || "—")}</div>
-      </div>
-      <div style="position:absolute;right:12px;bottom:12px;display:flex;gap:8px">
-        ${ currentRole === 'moderador' ? `<button data-idx="${idx}" class="btn small deleteBtn">Eliminar</button>` : '' }
-        ${ (currentRole === 'policia' || currentRole === 'moderador') ? `<button data-idx="${idx}" class="btn small selectBtn">Seleccionar</button>` : '' }
-      </div>
+/* Render tabla */
+function renderTabla(){
+  tbody.innerHTML="";
+  autos.forEach((a,idx)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${a.rut}</td>
+      <td>${a.prop}</td>
+      <td>${a.marca}</td>
+      <td>${a.modelo}</td>
+      <td>${a.patente}</td>
+      <td>${a.color}</td>
+      <td>${a.anio}</td>
+      <td class="td-estado"></td>
+      <td></td>
     `;
-    cardsEl.appendChild(div);
-  });
-
-  // attach handlers
-  if(currentRole === 'moderador'){
-    document.querySelectorAll(".deleteBtn").forEach(btn=>{
-      btn.addEventListener("click", async (e)=>{
-        const i = Number(e.currentTarget.dataset.idx);
-        if(!confirm("¿Eliminar este vehículo?")) return;
-        vehiculos.splice(i,1);
-        const ok = await putToJsonBin(vehiculos);
-        if(ok) renderList();
+    const statusCell = tr.querySelector(".td-estado");
+    const span = document.createElement("span");
+    span.className="estado-text";
+    span.textContent=a.estado||"Neutro";
+    if(modo==="policia"){
+      span.addEventListener("click",()=>{
+        const clave = prompt("Ingrese contraseña para cambiar estado:");
+        if(clave!==PASS_ESTADO){alert("Contraseña incorrecta"); return;}
+        const sel = document.createElement("select");
+        ["Neutro","Incautado","Confiscado"].forEach(o=>{
+          const opt = document.createElement("option");
+          opt.value=o; opt.text=o;
+          if(o===a.estado) opt.selected=true;
+          sel.appendChild(opt);
+        });
+        sel.addEventListener("change",()=>{
+          a.estado=sel.value;
+          guardarAutos();
+          renderTabla();
+        });
+        span.replaceWith(sel);
       });
-    });
-  }
+    }
+    statusCell.appendChild(span);
 
-  // Selecting (police edit or moderator quick select)
-  document.querySelectorAll(".selectBtn").forEach(btn=>{
-    btn.addEventListener("click", (e)=>{
-      const i = Number(e.currentTarget.dataset.idx);
-      openEditStateModal(i);
-    });
+    const actionsCell = tr.children[8];
+    if(modo==="moderador"){
+      const btnDel=document.createElement("button");
+      btnDel.textContent="Borrar";
+      btnDel.addEventListener("click",()=>{
+        if(confirm("Eliminar auto?")){
+          autos.splice(idx,1);
+          guardarAutos();
+          renderTabla();
+        }
+      });
+      actionsCell.appendChild(btnDel);
+    }
+    tbody.appendChild(tr);
   });
 }
 
-/* --------------- Search --------------- */
-btnBuscar.addEventListener("click", ()=>{
-  const q = (searchInput.value || "").toLowerCase().trim();
-  if(!q){ renderList(); return; }
-  const filtrados = vehiculos.filter(v => (v.propietario||"").toLowerCase().includes(q));
-  renderList(filtrados);
-});
-btnClearSearch.addEventListener("click", ()=>{
-  searchInput.value = "";
-  renderList();
-});
-
-/* --------------- Moderator actions --------------- */
-btnGuardar.addEventListener("click", async ()=>{
-  // confirm form-level password
-  const pass = moderPass.value || "";
-  if(pass !== PASSWORD_MODERADOR){
-    alert("Contraseña de formulario incorrecta (ModeracionCHCRP).");
-    return;
-  }
-  const rut = (rutI.value||"").trim();
-  const prop = (propI.value||"").trim();
-  const marca = (marcaI.value||"").trim();
-  const modelo = (modeloI.value||"").trim();
-  const patente = (patenteI.value||"").trim();
-  if(!rut || !prop || !marca || !modelo || !patente){
-    alert("Completa los campos obligatorios: RUT, Propietario, Marca, Modelo, Patente.");
-    return;
-  }
-  const nuevo = {
-    rut,
-    propietario: prop,
-    marca,
-    modelo,
-    patente,
-    color: (colorI.value||"").trim(),
-    anio: anioI.value?anioI.value.toString():"",
-    estado: "Neutro"
-  };
-  vehiculos.unshift(nuevo);
-  const ok = await putToJsonBin(vehiculos);
-  if(ok){
-    clearForm();
-    renderList();
-    alert("Vehículo agregado.");
-  } else alert("Error guardando.");
+/* Agregar auto */
+btnAgregar.addEventListener("click",()=>{formAdd.classList.remove("hide");});
+cancelBtn.addEventListener("click",()=>{formAdd.classList.add("hide");rutI.value="";propI.value="";marcaI.value="";modeloI.value="";patenteI.value="";colorI.value="";anioI.value="";});
+guardarBtn.addEventListener("click",()=>{
+  const nuevo={rut:rutI.value,prop:propI.value,marca:marcaI.value,modelo:modeloI.value,patente:patenteI.value,color:colorI.value,anio:anioI.value,estado:"Neutro"};
+  autos.push(nuevo);
+  guardarAutos();
+  renderTabla();
+  formAdd.classList.add("hide");
+  rutI.value="";propI.value="";marcaI.value="";modeloI.value="";patenteI.value="";colorI.value="";anioI.value="";
 });
 
-btnLimpiar.addEventListener("click", clearForm);
-function clearForm(){
-  moderPass.value=""; rutI.value=""; propI.value=""; marcaI.value=""; modeloI.value=""; patenteI.value=""; colorI.value=""; anioI.value="";
-}
-
-/* --------------- Edit state (police) --------------- */
-function openEditStateModal(index){
-  editTargetIndex = index;
-  editPass.value = "";
-  newState.value = vehiculos[index] && vehiculos[index].estado ? vehiculos[index].estado : "Neutro";
-  editMsg.innerText = "";
-  overlayEditModal.style.display = "flex";
-}
-
-btnCancelState.addEventListener("click", ()=>{ overlayEditModal.style.display = "none"; });
-
-btnApplyState.addEventListener("click", async ()=>{
-  const pass = editPass.value || "";
-  if(pass !== PASSWORD_EDIT){
-    editMsg.innerText = "Contraseña de edición incorrecta.";
-    return;
-  }
-  const estado = newState.value;
-  if(editTargetIndex < 0 || editTargetIndex >= vehiculos.length){
-    editMsg.innerText = "Vehículo no válido.";
-    return;
-  }
-  vehiculos[editTargetIndex].estado = estado;
-  const ok = await putToJsonBin(vehiculos);
-  if(ok){
-    overlayEditModal.style.display = "none";
-    renderList();
-    alert("Estado actualizado.");
-  } else {
-    editMsg.innerText = "Error guardando estado (ver consola).";
-  }
+/* Buscar */
+btnBuscar.addEventListener("click",()=>{
+  const q=inputBuscar.value.toLowerCase();
+  const filtrados=autos.filter(a=>a.rut.toLowerCase().includes(q)||a.prop.toLowerCase().includes(q)||a.patente.toLowerCase().includes(q));
+  tbody.innerHTML="";
+  filtrados.forEach((a,idx)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${a.rut}</td>
+      <td>${a.prop}</td>
+      <td>${a.marca}</td>
+      <td>${a.modelo}</td>
+      <td>${a.patente}</td>
+      <td>${a.color}</td>
+      <td>${a.anio}</td>
+      <td>${a.estado}</td>
+      <td></td>
+    `;
+    tbody.appendChild(tr);
+  });
 });
-
-/* --------------- Login / Roles --------------- */
-btnOpenLogin.addEventListener("click", ()=>{ overlay.style.display = "flex"; loginForm.style.display="none"; loginMsg.innerText=""; pwInput.value=""; });
-
-modeCivil.addEventListener("click", ()=>{ currentRole = 'civil'; loginForm.style.display="none"; loginMsg.innerText="Entrando como ciudadano..."; setTimeout(()=>{ overlay.style.display='none'; applyRole(); }, 350); });
-modePolicia.addEventListener("click", ()=>{ currentRole = 'policia'; loginForm.style.display="block"; loginMsg.innerText=""; });
-modeModerador.addEventListener("click", ()=>{ currentRole = 'moderador'; loginForm.style.display="block"; loginMsg.innerText=""; });
-
-btnLoginCancel.addEventListener("click", ()=>{ overlay.style.display='none'; loginForm.style.display='none'; loginMsg.innerText=''; });
-
-btnLogin.addEventListener("click", ()=>{
-  const pass = pwInput.value || "";
-  if(currentRole === 'policia'){
-    if(pass === PASSWORD_POLICIA){
-      overlay.style.display='none';
-      applyRole();
-    } else loginMsg.innerText = "Contraseña Policía incorrecta.";
-  } else if(currentRole === 'moderador'){
-    if(pass === PASSWORD_MODERADOR){
-      overlay.style.display='none';
-      applyRole();
-    } else loginMsg.innerText = "Contraseña Moderador incorrecta.";
-  } else {
-    loginMsg.innerText = "Selecciona un modo primero.";
-  }
-});
-
-function applyRole(){
-  // set UI by role
-  if(currentRole === 'civil'){
-    moderatorPanel.style.display = 'none';
-    notice.style.display = 'block';
-    notice.querySelector('.muted').innerText = "Modo Civil: solo ver vehículos.";
-  } else if(currentRole === 'policia'){
-    moderatorPanel.style.display = 'none';
-    notice.style.display = 'block';
-    notice.querySelector('.muted').innerText = "Modo Policía: seleccionar vehículo -> solicitar contraseña para editar estado.";
-  } else if(currentRole === 'moderador'){
-    moderatorPanel.style.display = 'block';
-    notice.style.display = 'block';
-    notice.querySelector('.muted').innerText = "Modo Moderador: registra y elimina vehículos.";
-  } else {
-    moderatorPanel.style.display = 'none';
-    notice.style.display = 'none';
-  }
-  // load vehicles
-  cargarVehiculos();
-}
-
-/* --------------- Cargar / Init --------------- */
-async function cargarVehiculos(){
-  vehiculos = await fetchFromJsonBin();
-  renderList();
-}
-
-// initial load
-window.addEventListener("load", async ()=>{
-  // start closed; load data for preview if credentials exist
-  if(BIN_ID && API_KEY && !BIN_ID.includes("68fcffb343b1c97be9803fbc") && !API_KEY.includes("$2a$10$4ESFRaH74lb6n73Ch1fvaeH2UppEdwKcIP20sub9irW9AgyrMelRW")){
-    vehiculos = await fetchFromJsonBin();
-    renderList();
-  } else {
-    // no credentials: still render empty
-    vehiculos = [];
-    renderList();
-    modInfo.innerText = "Sistema
-vehicular.";
-  }
-});
+btnRefrescar.addEventListener("click",()=>{inputBuscar.value="";renderTabla();});
 </script>
 </body>
 </html>
