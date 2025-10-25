@@ -42,24 +42,10 @@
   .chip{background:rgba(122,63,178,0.06);padding:6px 8px;border-radius:999px;font-size:12px;border:1px solid rgba(122,63,178,0.04)}
   .empty-state{background:#fff5ff;border:1px solid rgba(122,63,178,0.06);padding:14px;border-radius:10px;color:var(--muted)}
   .footer-note{font-size:13px;color:var(--muted);margin-top:10px}
-const btnBuscar = document.getElementById("btnBuscar");
-const searchInput = document.getElementById("searchInput");
-
-btnBuscar.addEventListener("click", () => {
-  const filtro = searchInput.value.toLowerCase().trim();
-  if (!filtro) {
-    mostrarVehiculos(vehiculos); // si el input está vacío, mostrar todos
-    return;
-  }
-
-  const filtrados = vehiculos.filter(v => v.rut.toLowerCase().includes(filtro));
-  mostrarVehiculos(filtrados);
-});
 </style>
 </head>
 <body>
-<input id="searchInput" placeholder="Buscar por RUT">
-<button id="btnBuscar">Buscar</button>
+
 <div class="container">
   <header>
     <div>
@@ -69,6 +55,10 @@ btnBuscar.addEventListener("click", () => {
     <div class="subtitle">Registro vehicular</div>
   </header>
 
+  <!-- Buscador por RUT (modo civil) -->
+  <input id="searchInput" placeholder="Buscar por RUT" style="margin-bottom:12px;padding:8px;width:220px;border-radius:6px;border:1px solid #7a3fb2">
+  <button id="btnBuscar" class="btn small" style="margin-bottom:12px">Buscar</button>
+
   <main class="layout">
     <!-- Main (cards) -->
     <section>
@@ -77,7 +67,6 @@ btnBuscar.addEventListener("click", () => {
       </div>
 
       <div id="cardsWrap">
-        <!-- espacio donde aparecen cartas -->
         <div id="emptyState" class="empty-state" style="display:none">No hay vehículos registrados.</div>
         <div id="cards" class="cards"></div>
       </div>
@@ -91,22 +80,16 @@ btnBuscar.addEventListener("click", () => {
 
         <label for="rut">RUT</label>
         <input id="rut" type="text" placeholder="12.345.678-9" />
-
         <label for="propietario">Propietario</label>
         <input id="propietario" type="text" placeholder="Nombre completo" />
-
         <label for="marca">Marca</label>
         <input id="marca" type="text" placeholder="Toyota, Chevrolet..." />
-
         <label for="modelo">Modelo</label>
         <input id="modelo" type="text" placeholder="Corolla, Silverado..." />
-
         <label for="patente">Patente</label>
         <input id="patente" type="text" placeholder="ABC123" />
-
         <label for="color">Color</label>
         <input id="color" type="text" placeholder="Rojo, Blanco..." />
-
         <label for="anio">Año</label>
         <input id="anio" type="number" placeholder="2020" min="1900" max="2099" />
 
@@ -126,38 +109,21 @@ btnBuscar.addEventListener("click", () => {
   <div class="modal" role="dialog" aria-modal="true">
     <h2>Iniciar sesión</h2>
     <p>Introduce la contraseña para acceder al modo Moderador. O ingresa como Civil para solo ver registros.</p>
-
     <input id="pwInput" class="input" type="password" placeholder="Contraseña" autocomplete="off" />
-
     <div class="row">
       <button id="btnEntrarMod" class="btn">Entrar (Moderador)</button>
       <button id="btnEntrarCivil" class="btn">Entrar como Civil</button>
     </div>
-
     <div id="loginMsg" style="margin-top:10px;color:#b00020"></div>
-    <div style="height:8px"></div>
-    <div class="muted">La contraseña no aparece en la página. Contraseña por defecto: <em>Anonima</em> (no visible en UI).</div>
   </div>
 </div>
 
 <script>
-/*
-  -----------------------------
-  CONFIGURA ESTOS VALORES (OPCION B)
-  -----------------------------
-  Reemplaza con tu BIN ID y tu X-Master-Key de JSONBin (no compartas la clave públicamente).
-*/
-const BIN_ID = "68fc356a43b1c97be97ecaf7";        // ej: 
-const API_KEY = "$2a$10$4ESFRaH74lb6n73Ch1fvaeH2UppEdwKcIP20sub9irW9AgyrMelRW";
-
+/* ----------------- CONFIG ----------------- */
+const BIN_ID = "68fc356a43b1c97be97ecaf7";  
+const API_KEY = "$2a$10$4ESFRaH74lb6n73Ch1fvaeH2UppEdwKcIP20sub9irW9AgyrMelRW";  
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-
-/* Contraseña (no se muestra en UI) */
 const MOD_PASSWORD = "Estrella0703";
-
-/* Estado local */
-let vehiculos = [];      // array con los vehículos cargados
-let isModerator = false;
 
 /* DOM */
 const overlay = document.getElementById("overlay");
@@ -183,241 +149,146 @@ const anioI = document.getElementById("anio");
 const btnGuardar = document.getElementById("btnGuardar");
 const btnLimpiar = document.getElementById("btnLimpiar");
 
-/* ------------------ Helpers ------------------ */
+const searchInput = document.getElementById("searchInput");
+const btnBuscar = document.getElementById("btnBuscar");
 
-function showOverlay(){ overlay.style.display = "flex"; pwInput.value=""; loginMsg.innerText=""; pwInput.focus(); }
-function hideOverlay(){ overlay.style.display = "none"; }
-function showModeratorPanel(){ moderatorPanel.style.display = "block"; }
-function hideModeratorPanel(){ moderatorPanel.style.display = "none"; }
-function showCivilNotice(){ noticeCivil.style.display = "block"; }
-function hideCivilNotice(){ noticeCivil.style.display = "none"; }
+/* ----------------- Estado ----------------- */
+let vehiculos = [];
+let isModerator = false;
 
+/* ----------------- Helpers ----------------- */
 function escapeHtml(str){
-  if(str === undefined || str === null) return "";
+  if(!str) return "";
   return String(str).replace(/[&<>"'`=\/]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#96;','=':'&#x3D;'}[s]));
 }
 
-/* ------------------ Render ------------------ */
-
+/* ----------------- Render ----------------- */
 function renderList(){
   cardsEl.innerHTML = "";
-  if(!vehiculos || vehiculos.length === 0){
+  if(!vehiculos || vehiculos.length===0){
     emptyStateEl.style.display = "block";
     return;
-  } else {
-    emptyStateEl.style.display = "none";
-  }
+  } else emptyStateEl.style.display="none";
 
-  vehiculos.forEach((v, idx) => {
+  vehiculos.forEach((v, idx)=>{
     const div = document.createElement("div");
-    div.className = "veh-card";
-    div.innerHTML = `
+    div.className="veh-card";
+    div.innerHTML=`
       <div class="veh-top">
-        <div style="font-weight:700">${escapeHtml(v.propietario || "—")}</div>
-        <div class="chip">${escapeHtml(v.patente || "—")}</div>
+        <div style="font-weight:700">${escapeHtml(v.propietario)}</div>
+        <div class="chip">${escapeHtml(v.patente)}</div>
       </div>
-      <div style="margin-bottom:6px;color:var(--muted)">${escapeHtml(v.marca || "—")} • ${escapeHtml(v.modelo || "—")} • ${escapeHtml(v.anio || "—")}</div>
+      <div style="margin-bottom:6px;color:var(--muted)">${escapeHtml(v.marca)} • ${escapeHtml(v.modelo)} • ${escapeHtml(v.anio)}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <div class="chip">RUT: ${escapeHtml(v.rut || "—")}</div>
-        <div class="chip">Color: ${escapeHtml(v.color || "—")}</div>
+        <div class="chip">RUT: ${escapeHtml(v.rut)}</div>
+        <div class="chip">Color: ${escapeHtml(v.color)}</div>
       </div>
-      ${isModerator ? `<div style="margin-top:8px;text-align:right"><button data-idx="${idx}" class="btn small deleteBtn" style="background:#ffe6ea;color:#b00020;border-radius:8px;padding:6px 8px;border:1px solid rgba(176,0,32,0.08);font-weight:700">Eliminar</button></div>` : ""}
+      ${isModerator?`<div style="margin-top:8px;text-align:right"><button data-idx="${idx}" class="btn small deleteBtn" style="background:#ffe6ea;color:#b00020;border-radius:8px;padding:6px 8px;border:1px solid rgba(176,0,32,0.08);font-weight:700">Eliminar</button></div>`:""}
     `;
     cardsEl.appendChild(div);
   });
 
-  // attach delete handlers if moderator
   if(isModerator){
-    document.querySelectorAll(".deleteBtn").forEach(btn => {
-      btn.addEventListener("click", async (e) => {
+    document.querySelectorAll(".deleteBtn").forEach(btn=>{
+      btn.addEventListener("click", async (e)=>{
         const i = Number(e.currentTarget.dataset.idx);
-        const ok = confirm("¿Eliminar este vehículo?");
-        if(!ok) return;
-        await eliminarVehiculo(i);
+        if(confirm("¿Eliminar este vehículo?")){
+          await eliminarVehiculo(i);
+        }
       });
     });
   }
 }
 
-/* ------------------ JSONBin API ------------------ */
-
-/*
-  Nota para JSONBin Gratis: crea el bin con contenido inicial:
-  {
-    "vehiculos": []
-  }
-*/
+/* ----------------- JSONBin ----------------- */
 async function obtenerDesdeJsonBin(){
-  if(!BIN_ID || !API_KEY || BIN_ID.includes("AQUI") || API_KEY.includes("AQUI")){
-    modInfo.innerText = "BIN_ID o API_KEY no configurados en el código.";
-    return [];
-  }
-
   try{
-    modInfo.innerText = "Cargando desde JSONBin...";
-    const res = await fetch(`${BASE_URL}/latest`, {
-      method: "GET",
-      headers: {
-        "X-Master-Key": API_KEY,
-        "Content-Type": "application/json"
-      }
-    });
-    if(!res.ok) throw new Error("Error al leer JSONBin: " + res.status);
+    const res = await fetch(`${BASE_URL}/latest`, {headers:{"X-Master-Key":API_KEY,"Content-Type":"application/json"}});
     const data = await res.json();
-    const record = data.record || {};
-    const arr = Array.isArray(record.vehiculos) ? record.vehiculos : [];
-    modInfo.innerText = `Cargados ${arr.length} vehículos.`;
-    return arr;
-  } catch(err){
-    console.error(err);
-    modInfo.innerText = "Error cargando datos (ver consola).";
-    return [];
-  }
+    return Array.isArray(data.record.vehiculos)?data.record.vehiculos:[];
+  } catch(err){ console.error(err); return []; }
 }
 
 async function guardarEnJsonBin(arr){
-  if(!BIN_ID || !API_KEY || BIN_ID.includes("AQUI") || API_KEY.includes("AQUI")){
-    alert("BIN_ID o API_KEY no configurados. Abre el archivo y pega tus datos.");
-    return false;
-  }
-
   try{
-    modInfo.innerText = "Guardando en JSONBin...";
-    const payload = { vehiculos: arr };
-    const res = await fetch(BASE_URL, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": API_KEY
-      },
-      body: JSON.stringify(payload)
-    });
-    if(!res.ok) throw new Error("Error al guardar: " + res.status);
-    modInfo.innerText = "Guardado correctamente.";
+    await fetch(BASE_URL,{method:"PUT",headers:{"Content-Type":"application/json","X-Master-Key":API_KEY},body:JSON.stringify({vehiculos:arr})});
     return true;
-  } catch(err){
-    console.error(err);
-    modInfo.innerText = "Error guardando (ver consola).";
-    return false;
-  }
+  } catch(err){ console.error(err); return false; }
 }
 
-/* ------------------ CRUD local + sync ------------------ */
-
-async function cargarVehiculos(){
-  vehiculos = await obtenerDesdeJsonBin();
-  renderList();
-}
+/* ----------------- CRUD ----------------- */
+async function cargarVehiculos(){ vehiculos = await obtenerDesdeJsonBin(); renderList(); }
 
 async function guardarVehiculo(){
-  // validaciones básicas
-  const rut = rutI.value.trim();
-  const propietario = propI.value.trim();
-  const marca = marcaI.value.trim();
-  const modelo = modeloI.value.trim();
-  const patente = patenteI.value.trim();
+  const rut = rutI.value.trim(), propietario = propI.value.trim(),
+        marca = marcaI.value.trim(), modelo = modeloI.value.trim(),
+        patente = patenteI.value.trim();
 
-  if(!rut || !propietario || !marca || !modelo || !patente){
-    alert("Completa los campos obligatorios: RUT, Propietario, Marca, Modelo, Patente.");
-    return;
-  }
+  if(!rut||!propietario||!marca||!modelo||!patente){ alert("Completa campos obligatorios"); return; }
 
-  const nuevo = {
-    rut,
-    propietario,
-    marca,
-    modelo,
-    patente,
-    color: colorI.value.trim(),
-    anio: anioI.value ? anioI.value.toString() : ""
-  };
-
-  // push al inicio (últimos arriba)
+  const nuevo={rut, propietario, marca, modelo, patente, color:colorI.value.trim(), anio:anioI.value?anioI.value.toString():""};
   vehiculos.unshift(nuevo);
-
-  const ok = await guardarEnJsonBin(vehiculos);
-  if(ok){
-    clearForm();
-    renderList();
-    alert("Vehículo guardado correctamente.");
-  } else {
-    alert("Error al guardar en JSONBin. Revisa consola y credenciales.");
-  }
+  const ok=await guardarEnJsonBin(vehiculos);
+  if(ok){ clearForm(); renderList(); alert("Vehículo guardado correctamente"); } 
+  else alert("Error guardando en JSONBin");
 }
 
 async function eliminarVehiculo(index){
-  if(index < 0 || index >= vehiculos.length) return;
-  vehiculos.splice(index, 1);
-  const ok = await guardarEnJsonBin(vehiculos);
-  if(ok){
-    renderList();
-    alert("Eliminado correctamente.");
-  } else {
-    alert("Error al eliminar en JSONBin.");
-  }
+  if(index<0||index>=vehiculos.length) return;
+  vehiculos.splice(index,1);
+  await guardarEnJsonBin(vehiculos);
+  renderList();
 }
 
-function clearForm(){
-  rutI.value = "";
-  propI.value = "";
-  marcaI.value = "";
-  modeloI.value = "";
-  patenteI.value = "";
-  colorI.value = "";
-  anioI.value = "";
-}
+function clearForm(){ rutI.value=""; propI.value=""; marcaI.value=""; modeloI.value=""; patenteI.value=""; colorI.value=""; anioI.value=""; }
 
-/* ------------------ UI / eventos ------------------ */
-
-btnEntrarMod.addEventListener("click", async () => {
-  const pass = pwInput.value || "";
-  if(pass === MOD_PASSWORD){
-    isModerator = true;
-    hideOverlay();
-    showModeratorPanel();
-    hideCivilNotice();
-    await cargarVehiculos();
-    renderList();
-  } else {
-    loginMsg.innerText = "Contraseña incorrecta.";
-  }
+/* ----------------- UI ----------------- */
+btnEntrarMod.addEventListener("click", ()=>{
+  if(pwInput.value===MOD_PASSWORD){
+    isModerator=true;
+    overlay.style.display="none";
+    moderatorPanel.style.display="block";
+    noticeCivil.style.display="none";
+    cargarVehiculos();
+  } else loginMsg.innerText="Contraseña incorrecta.";
 });
 
-btnEntrarCivil.addEventListener("click", async () => {
-  isModerator = false;
-  hideOverlay();
-  hideModeratorPanel();
-  showCivilNotice();
-  await cargarVehiculos();
+btnEntrarCivil.addEventListener("click", ()=>{
+  isModerator=false;
+  overlay.style.display="none";
+  moderatorPanel.style.display="none";
+  noticeCivil.style.display="block";
+  cargarVehiculos();
+});
+
+pwInput.addEventListener("keyup",(e)=>{if(e.key==="Enter") btnEntrarMod.click();});
+btnGuardar.addEventListener("click",guardarVehiculo);
+btnLimpiar.addEventListener("click",clearForm);
+
+/* ----------------- Botón Buscar ----------------- */
+btnBuscar.addEventListener("click", ()=>{
+  const filtro = searchInput.value.toLowerCase().trim();
+  if(!filtro){ renderList(); return; }
+  const filtrados = vehiculos.filter(v=>v.rut.toLowerCase().includes(filtro));
   renderList();
+  // renderList ahora necesita mostrar filtrados
+  cardsEl.innerHTML="";
+  if(filtrados.length===0){ emptyStateEl.style.display="block"; return; } else emptyStateEl.style.display="none";
+  filtrados.forEach((v,idx)=>{
+    const div=document.createElement("div");
+    div.className="veh-card";
+    div.innerHTML=`<div class="veh-top"><div style="font-weight:700">${escapeHtml(v.propietario)}</div><div class="chip">${escapeHtml(v.patente)}</div></div>
+      <div style="margin-bottom:6px;color:var(--muted)">${escapeHtml(v.marca)} • ${escapeHtml(v.modelo)} • ${escapeHtml(v.anio)}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="chip">RUT: ${escapeHtml(v.rut)}</div>
+        <div class="chip">Color: ${escapeHtml(v.color)}</div>
+      </div>`;
+    cardsEl.appendChild(div);
+  });
 });
 
-pwInput.addEventListener("keyup", (e) => {
-  if(e.key === "Enter") btnEntrarMod.click();
-});
-
-btnGuardar.addEventListener("click", guardarVehiculo);
-btnLimpiar.addEventListener("click", clearForm);
-
-/* abrir modal al cargar */
-window.addEventListener("load", async () => {
-  showOverlay();
-  // intentamos cargar pero no mostramos panel a menos que seas moderador
-  if(!BIN_ID || !API_KEY || BIN_ID.includes("AQUI") || API_KEY.includes("AQUI")){
-    modInfo.innerText = "Recuerda pegar BIN_ID y API_KEY en el archivo para que guarde.";
-    // no abortamos: la UI se puede usar pero sin guardar
-    vehiculos = [];
-    renderList();
-    return;
-  }
-  // si hay credenciales intentamos cargar para mostrar a civiles
-  await cargarVehiculos();
-  renderList();
-});
-
-/* util: mostrar/ocultar overlay */
-function showOverlay(){ overlay.style.display = "flex"; }
-function hideOverlay(){ overlay.style.display = "none"; }
+/* ----------------- Cargar al inicio ----------------- */
+window.addEventListener("load",()=>{ overlay.style.display="flex"; cargarVehiculos(); });
 
 </script>
 </body>
